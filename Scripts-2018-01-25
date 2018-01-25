@@ -3,7 +3,7 @@
 ##Strategy: Made Fastq files for the genes and map to the multiple species.
 
 ##Build BWA Index
-bwa index Pseudomonas_aeruginosa_gca.toplevel.fa -p BWAIndex.Pseudomonas_aeruginosa_gca -a is
+bwa index Pseudomonas_aeruginosa_gca.toplevel.fa -p BWAIndex.Pseudomonas_aeruginosa_gca -a is;
 
 ##Map Genes to Species with -a to output all alignments
 bwa mem -t 1 -a BWAIndex.Pseudomonas_aeruginosa_gca Gat.fq | samtools view -h -F 2048 - | awk '$1!~/@/' > Gat.mem.sam;
