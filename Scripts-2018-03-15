@@ -7,7 +7,7 @@
 ##Parameters
 Work_dir="XXX";
 cd $Work_dir;
-File_dir="XXX"; #narrowPeak file
+File_dir="XXX"; ##narrowPeak file
 ChIP_file="XXX"; ##ChIP file with pattern: xx.bed
 
 ##process 1, generate qValue sorted file;
@@ -17,10 +17,10 @@ for j in `ls $File_dir | grep _peaks.narrowPeak$`; do i=${j%_*}; echo -n $i"  ";
   c_count=$(wc -l < ${i}_peaks.narrowPeak); echo $c_count;
 done
 
-#process 2, print ChIP-seq files and counts;
+##process 2, print ChIP-seq files and counts;
 echo -e "\n[`date +"%m-%d %T"`] Calculating percent of binding sites ...\n"
 echo -n "SeqFile""  ""SeqPeaks""  "; #tab separation
-for k in `ls $ChIP_file | grep .bed`; do #sub-dataset control
+for k in `ls $ChIP_file | grep .bed`; do ##sub-dataset control
   c_TFname=${k%.*};
   echo -n $c_TFname"  "; #tab separation
 done
@@ -34,7 +34,7 @@ for k in `ls $ChIP_file | grep .bed`; do ##sub-dataset control
 done
 echo -e "";
 
-#process 3, calculate percent of binding sites;
+##process 3, calculate percent of binding sites;
 for c_percent in {1..100}; do echo -e "Peaks of top $c_percent%";
   for j in `ls $File_dir | grep _peaks.narrowPeak$`; do i=${j%_*}; echo -n $i"  "; #tab separation
     c_count=$(wc -l < ${i}_peaks.narrowPeak);
