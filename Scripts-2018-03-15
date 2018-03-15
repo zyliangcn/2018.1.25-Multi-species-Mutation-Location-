@@ -1,0 +1,57 @@
+##Date: 2018-03-15
+##Author: Zhengyu LIANG
+##Data: ChIA-PET2 output *_peaks.narrowPeak
+##Strategy: Rank peaks by qValue ($9) and overlap to public ChIP-seq data
+##Output format: narrowPeak_name; narrowPeak_count; overlap to ChIP_1; overlap to ChIP_2; ...; overlap to ChIP_n;
+
+##Parameters
+Work_dir="XXX";
+cd $Work_dir;
+File_dir="XXX"; #narrowPeak file
+ChIP_file="XXX"; ##ChIP file with pattern: xx.bed
+
+##process 1, generate qValue sorted file;
+echo -e "\n[`date +"%m-%d %T"`] Generating qValue sorted file ...\n"
+for j in `ls $File_dir | grep _peaks.narrowPeak$`; do i=${j%_*}; echo -n $i"  "; #tab separation
+  sort -k9,9nr -k7,7nr ${i}_peaks.narrowPeak > $i.qV.peak; ##9:log10qValue; 7:foldchange
+  c_count=$(wc -l < ${i}_peaks.narrowPeak); echo $c_count;
+done
+
+#process 2, print ChIP-seq files and counts;
+echo -e "\n[`date +"%m-%d %T"`] Calculating percent of binding sites ...\n"
+echo -n "SeqFile""  ""SeqPeaks""  "; #tab separation
+for k in `ls $ChIP_file | grep .bed`; do #sub-dataset control
+  c_TFname=${k%.*};
+  echo -n $c_TFname"  "; #tab separation
+done
+echo -e "";
+
+echo -n "ChIPFile"" ""ChIPPeaks"" "; #tab separation
+for k in `ls $ChIP_file | grep .bed`; do ##sub-dataset control
+  c_TFname=${k%.*};
+  c_TFline=$(wc -l < $ChIP_file/${c_TFname}.bed);
+  echo -n $c_TFline"  "; #tab separation
+done
+echo -e "";
+
+#process 3, calculate percent of binding sites;
+for c_percent in {1..100}; do echo -e "Peaks of top $c_percent%";
+  for j in `ls $File_dir | grep _peaks.narrowPeak$`; do i=${j%_*}; echo -n $i"  "; #tab separation
+    c_count=$(wc -l < ${i}_peaks.narrowPeak);
+    c_line=$(echo "scale=0; $c_count*$c_percent/100" | bc); echo -n $c_line"  "; #tab separation; scale=0,1,2 means X, X.x, X.xx
+    head -$c_line $i.qV.peak > $i.qV.top$c_percent;
+    for k in `ls $ChIP_file | grep .bed`; do
+      c_TFname=${k%.*};
+      bedtools intersect -u -a $i.qV.top$c_percent -b $ChIP_file/${c_TFname}.bed > $i.qV.top$c_percent.tmp;
+      c_TFcount=$(wc -l < $i.qV.top$c_percent.tmp); echo -n $c_TFcount" "; #tab separation
+    done
+    echo -e "";
+    rm $i.qV.top$c_percent; rm $i.qV.top$c_percent.tmp;
+  done
+done
+
+##process 4, remove qValue sorted file;
+echo -e "\n[`date +"%m-%d %T"`] Remove qValue sorted file ...\n"
+for j in `ls $File_dir | grep _peaks.narrowPeak$`; do i=${j%_*}; echo -n $i"  "; #tab separation
+  rm $i.qV.peak; ##9:log10qValue; 7:foldchange
+done
