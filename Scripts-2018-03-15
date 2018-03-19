@@ -1,4 +1,5 @@
 ##Date: 2018-03-15
+##Version 1.1
 ##Author: Zhengyu LIANG
 ##Data: ChIA-PET2 output *_peaks.narrowPeak
 ##Strategy: Rank peaks by qValue ($9) and overlap to public ChIP-seq data
@@ -13,8 +14,8 @@ ChIP_file="XXX"; ##ChIP file with pattern: xx.bed
 ##process 1, generate qValue sorted file;
 echo -e "\n[`date +"%m-%d %T"`] Generating qValue sorted file ...\n"
 for j in `ls $File_dir | grep _peaks.narrowPeak$`; do i=${j%_*}; echo -n $i"  "; #tab separation
-  sort -k9,9nr -k7,7nr ${i}_peaks.narrowPeak > $i.qV.peak; ##9:log10qValue; 7:foldchange
-  c_count=$(wc -l < ${i}_peaks.narrowPeak); echo $c_count;
+  sort -k9,9nr -k7,7nr $File_dir/${i}_peaks.narrowPeak > $i.qV.peak; ##9:log10qValue; 7:foldchange
+  c_count=$(wc -l < $File_dir/${i}_peaks.narrowPeak); echo $c_count;
 done
 
 ##process 2, print ChIP-seq files and counts;
@@ -37,7 +38,7 @@ echo -e "";
 ##process 3, calculate percent of binding sites;
 for c_percent in {1..100}; do echo -e "Peaks of top $c_percent%";
   for j in `ls $File_dir | grep _peaks.narrowPeak$`; do i=${j%_*}; echo -n $i"  "; #tab separation
-    c_count=$(wc -l < ${i}_peaks.narrowPeak);
+    c_count=$(wc -l < $File_dir/${i}_peaks.narrowPeak);
     c_line=$(echo "scale=0; $c_count*$c_percent/100" | bc); echo -n $c_line"  "; #tab separation; scale=0,1,2 means X, X.x, X.xx
     head -$c_line $i.qV.peak > $i.qV.top$c_percent;
     for k in `ls $ChIP_file | grep .bed`; do
